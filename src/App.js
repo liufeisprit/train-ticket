@@ -1,44 +1,47 @@
-import React,{createContext,useState} from 'react';
-const BatteryContext=createContext()
-const OnlineContext=createContext(false)
-
-const Middle=(props)=>{
-	return (
-		<Leaf/>
-	)
+import React,{lazy,Suspense,useEffect} from 'react';
+const App1=lazy(()=>import(/* webpackChunkName: "App" */ './App.1'))
+class ErrorBoundary extends React.Component{
+	state={
+		hasError :false
+	}
+	static getDerivedStateFromError(error){
+		console.log(error)
+		return {hasError:true}
+	}
+	render(){
+		if (this.state.hasError) {
+			// Error path
+			return (
+			  <div>
+				<h2>Something went wrong.</h2>
+			  </div>
+			);
+		  }
+		  // Normally, just render children
+		  return this.props.children||'';
+		
+	}
 }
-const Leaf=()=>{
-	return (
-		<BatteryContext.Consumer>
-			
-				{
-					battery=>(
-					<OnlineContext.Consumer>
-						{online=><h1>battery:{battery},online: {String(online)}</h1>}
-					</OnlineContext.Consumer>
-					)
-				
-				}
-			
-		</BatteryContext.Consumer>
-	)
-}
-function App() {
-	const [battery,setBattery]=useState(60)
-	const [isOnline,setIsOnline]=useState(false)
 
+function App(props) {
 	return (
 		<>
-			<button onClick={()=>setBattery(battery+1)}>充电</button>
-			<button onClick={()=>setIsOnline(!isOnline)}>切换状态</button>
-
-			<BatteryContext.Provider value={battery}>
-				<OnlineContext.Provider value={isOnline}>
-					<Middle/>
-				</OnlineContext.Provider>
-			</BatteryContext.Provider>
+			
+				<ErrorBoundary>
+					<Suspense fallback={<div>Loading....</div>}>
+							<App1/>
+					</Suspense>
+				</ErrorBoundary>
+				
+				
+				
+				
+				
 		</>
-	);
+			
+			
+	)
 }
+
 
 export default App;
