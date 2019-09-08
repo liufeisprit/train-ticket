@@ -29,7 +29,7 @@ function App(props) {
 			
 				<ErrorBoundary>
 					<Suspense fallback={<div>Loading....</div>}>
-							<App1/>
+							<App1  a={{a:1}} />
 					</Suspense>
 				</ErrorBoundary>
 				
