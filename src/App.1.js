@@ -28,10 +28,29 @@ const Leaf=()=>{
 		// </BatteryContext.Consumer>
 	)
 }
+
+function useSize(){
+    const [size,setSize]=useState({width:document.documentElement.clientWidth,
+        height:document.documentElement.clientHeight})
+    const _onResize=()=>{
+        setSize(
+            {
+                width:document.documentElement.clientWidth,
+                height:document.documentElement.clientHeight
+            }
+        )
+    }
+    useEffect(()=>{
+        window.addEventListener('resize',_onResize,false)
+        return ()=>window.removeEventListener('resize',_onResize,false)
+    },[])
+    return size
+}
 function App(props) {
 	const [battery,setBattery]=useState(60)
 	const [isOnline,setIsOnline]=useState(false)
-	const btnRef=useRef()
+    const btnRef=useRef()
+    const size=useSize()
 	const [count,setCount]=useState(()=>{
 		console.log('init')
 		return 0
@@ -55,13 +74,13 @@ function App(props) {
 	var it=useRef()
 	var countRef=useRef()
 	useEffect(() => {
-		it.current=setInterval(()=>{
+		// it.current=setInterval(()=>{
 			
-			setCount(count=>{
-				countRef.current=count+1
-				return count+1
-			})
-		},1000)
+		// 	setCount(count=>{
+		// 		countRef.current=count+1
+		// 		return count+1
+		// 	})
+		// },1000)
 		
 	}, []);
 	useEffect(()=>{
@@ -75,6 +94,7 @@ function App(props) {
 			<button onClick={()=>{setBattery(battery+1);}}>充电</button>
 			<button onClick={()=>setIsOnline(!isOnline)}>切换状态</button>
 			<button onClick={()=>setCount(count+1)}>count++</button>
+            <div>width:{size.width},height:{size.height}</div>
 			<FixButton text={count} onClick={_handleClick} />
 			<BatteryContext.Provider value={battery}>
 				<OnlineContext.Provider value={isOnline}>
