@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.5.5",
+    "@babel/plugin-proposal-optional-chaining": "^7.6.0",
     "@svgr/webpack": "4.3.2",
     "@typescript-eslint/eslint-plugin": "1.13.0",
     "@typescript-eslint/parser": "1.13.0",
@@ -137,6 +138,7 @@
   "babel": {
     "presets": [
       "react-app"
-    ]
+    ],
+    "plugins": [ "@babel/plugin-proposal-optional-chaining" ]
   }
 }
