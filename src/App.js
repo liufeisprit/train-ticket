@@ -1,13 +1,12 @@
 import React,{useState,useEffect,useCallback,useRef,memo} from 'react';
 import * as createAction from './action'
 import './index.css'
-
+// import combineReducers from './reducers'
 function bindActionCreateors(actionCreateors,dispatch){
     let ret={}
     //循环绑定函数时候要用到let或者闭包 不然最后key为最后的值
     for(let key in actionCreateors){
         ret[key]=function(...args){
-            
             const actionCreateor=actionCreateors[key]
             const action=actionCreateor(...args)
             dispatch(action)
@@ -15,6 +14,39 @@ function bindActionCreateors(actionCreateors,dispatch){
     }
     return ret
 }
+const reducers={
+    todos(state,action){
+        const {type,payload}=action
+        console.log(state,payload)
+        switch (type){
+            case 'set': return payload;
+            case 'add': return [...state,payload];
+            case 'remove':return state.filter(todo=>todo.id!==payload);
+            case 'toggle':
+                return state.map(todo=>
+                    todo.id===payload?
+                    {
+                        ...todo,
+                        complete:!todo.complete
+                    }
+                    :todo
+                );
+            
+            default:return state
+        }
+    },
+    incrementCount(state,action){
+        const {type}=action
+        switch(type){
+            case 'set' :
+            case 'add' :
+                return state+1
+            default:return state
+        }
+    }
+}
+
+// const reducer=combineReducers(reducers)
 const Control=memo(function Control(props){
     console.log('control render')
     const {addTodo}=props
@@ -45,7 +77,6 @@ const Control=memo(function Control(props){
 
 const TodoItem=memo(function TodoItem(props){
     console.log('TodoItem render')
-    console.log(props.removeTodo.toString())
     const {
         todo:{
             id,
@@ -70,7 +101,8 @@ const Todos=memo(function Todos(props){
         <ul>
             {
                 todos.map((todo,index)=>(
-                    <TodoItem key={index} todo={todo} removeTodo={removeTodo} toggleTodo={toggleTodo}></TodoItem>
+                    //有删除操作时候key如果为index会刷新多遍
+                    <TodoItem key={todo.id} todo={todo} removeTodo={removeTodo} toggleTodo={toggleTodo}></TodoItem>
                 ))
             }
         </ul>
@@ -80,32 +112,73 @@ const LS_KEY='_$todo_'
 function TodoList (){
     console.log('TodoList render')
     const [todos,setTodos]=useState([])
+    const [incrementCount,setIncrementCount]=useState(0)
     
-    const dispatch=useCallback((action)=>{
+    function reducer(state,action){
         const {type,payload}=action
+        const {todos,incrementCount}=state
         switch(type){
             case 'set':
-                setTodos(payload)
-                break;
+                return {...state,todos:payload}
             case 'add':
-                setTodos(todos=>[...todos,payload])
-                break;
+                return {...state,todos:[...todos,payload]}
             case 'remove':
-                setTodos(todos=>todos.filter(todo=>todo.id!==payload))
-                break;
+                return {...state,todos:todos.filter(todo=>todo.id!==payload)}
             case 'toggle':
-                setTodos(todos=>todos.map(todo=>{
-                        return todo.id===payload?
+                return {...state,todos:todos.map(todo=>
+                        todo.id===payload?
                         {
                             ...todo,
                             complete:!todo.complete
                         }
-                        :todo
-                }))
-                break;
-            default:
+                        :todo)
+                    }
+            default : return state
         }
-    },[])
+    }
+
+    const dispatch=useCallback((action)=>{
+       const state={
+           todos,
+           incrementCount
+       }
+       const setters={
+           todos:setTodos,
+           incrementCount:setIncrementCount
+       }
+       console.log(state,'state')
+       const newState=reducer(state,action)
+       console.log(newState,'newState')
+       for(let key in newState){
+            setters[key](todo=>newState[key])
+       }
+    },[todos,incrementCount])
+    // const dispatch=useCallback((action)=>{
+    //     const {type,payload}=action
+    //     switch(type){
+    //         case 'set':
+    //             setTodos(payload)
+    //             break;
+    //         case 'add':
+    //             setTodos(todos=>[...todos,payload])
+    //             break;
+    //         case 'remove':
+    //             setTodos(todos=>todos.filter(todo=>todo.id!==payload))
+    //             break;
+    //         case 'toggle':
+    //             setTodos(todos=>todos.map(todo=>{
+    //                     return todo.id===payload?
+    //                     {
+    //                         ...todo,
+    //                         complete:!todo.complete
+    //                     }
+    //                     :todo
+    //             }))
+    //             break;
+    //         default:
+    //     }
+    // },[])
+
     useEffect(()=>{
         const todos=JSON.parse(localStorage.getItem(LS_KEY))||[]
         dispatch({type:'set',payload:todos})
@@ -113,6 +186,35 @@ function TodoList (){
     useEffect(()=>{
         localStorage.setItem(LS_KEY,JSON.stringify(todos))
     },[todos])
+    
+    // const reducer=function(state,action){
+    //     const {type,payload}=action
+    //     const {todos,incrementCount}=state
+    //     switch (type){
+    //         case 'set': return {...state,todos:payload,incrementCount:incrementCount+1};
+    //         case 'add': return {
+    //             ...state,
+    //             todos:[...todos,payload],
+    //             incrementCount:incrementCount+1
+    //         };
+    //         case 'remove':return{
+    //             ...state,todos:todos.filter(todo=>todo.id!==payload)
+    //         };
+    //         case 'toggle':return{
+    //             ...state,todos:todos.map(todo=>
+    //                  todo.id===payload?
+    //                 {
+    //                     ...todo,
+    //                     complete:!todo.complete
+    //                 }
+    //                 :todo
+    //             )
+    //         };
+    //         default:return state
+    //     }
+        
+    // }
+    
     return (
         <div className='todo-list'>
             <Control 

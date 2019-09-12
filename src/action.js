@@ -1,5 +1,5 @@
 
-
+//action createors
 export function createSet(payload){
     return {
         type:'set',
@@ -13,7 +13,6 @@ export function createAdd(payload){
     }
 }
 export function createRemove(payload){
-    console.log('remove')
     return {
         type:'remove',
         payload
