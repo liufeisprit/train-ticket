@@ -1,0 +1,6 @@
+const path = require('path')
+const glob = require('glob')
+const ENTRY_PATH = path.resolve(__dirname,'../public')
+const entryHtml = glob.sync(ENTRY_PATH+'/**.html')
+console.log(ENTRY_PATH)
+console.log(entryHtml)

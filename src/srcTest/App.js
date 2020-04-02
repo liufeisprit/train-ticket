@@ -220,7 +220,7 @@ function TodoList (){
             <Control 
                 {...useCallback(bindActionCreateors({
                     addTodo:createAction.createAdd
-                },dispatch),[])}
+                },dispatch),[dispatch])}
             />
             <Todos 
                 {...useCallback(bindActionCreateors({
